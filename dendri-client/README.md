@@ -1,11 +1,11 @@
-# @afterrealism/dendri
+# @afterrealism/dendri-client
 
 Framework-neutral TypeScript client SDK for Dendri WebRTC signaling.
 
 ## Install
 
 ```bash
-npm install @afterrealism/dendri
+npm install @afterrealism/dendri-client
 ```
 
 ## Connect To Your Server
@@ -13,7 +13,7 @@ npm install @afterrealism/dendri
 Dendri is self-host-first. You must provide the signaling server that your app should use:
 
 ```ts
-import { Dendri } from "@afterrealism/dendri";
+import { Dendri } from "@afterrealism/dendri-client";
 
 const peer = new Dendri({
 	host: "signal.example.com",
@@ -39,7 +39,7 @@ const peer = new Dendri({
 Use `createDendriStore()` when integrating with UI frameworks:
 
 ```ts
-import { createDendriStore } from "@afterrealism/dendri";
+import { createDendriStore } from "@afterrealism/dendri-client";
 
 const store = createDendriStore({
 	host: "localhost",
@@ -69,20 +69,20 @@ The package still builds browser global assets in `dist/` for CDN/script-tag wor
 - `dist/dendri.min.global.js`
 
 Prefer npm imports for framework apps.
-# @afterrealism/dendri
+# @afterrealism/dendri-client
 
 WebRTC P2P signaling library for the browser and Node.js.
 
 ## Install
 
 ```bash
-npm install @afterrealism/dendri
+npm install @afterrealism/dendri-client
 ```
 
 ## Quick Start
 
 ```typescript
-import Dendri from "@afterrealism/dendri";
+import Dendri from "@afterrealism/dendri-client";
 
 const peer = new Dendri("my-peer-id", {
   host: "signal.example.com",
@@ -128,7 +128,7 @@ peer.on("connection", (conn) => {
 For binary serialization instead of JSON:
 
 ```typescript
-import { MsgPackDendri } from "@afterrealism/dendri";
+import { MsgPackDendri } from "@afterrealism/dendri-client";
 
 const peer = new MsgPackDendri("my-peer-id", {
   host: "signal.example.com",

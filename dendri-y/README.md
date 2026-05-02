@@ -1,18 +1,18 @@
-# @afterrealism/y-dendri
+# @afterrealism/dendri-y
 
 Framework-neutral Yjs provider for Dendri rooms.
 
 ## Install
 
 ```bash
-npm install @afterrealism/dendri @afterrealism/y-dendri yjs y-protocols
+npm install @afterrealism/dendri-client @afterrealism/dendri-y yjs y-protocols
 ```
 
 ## Usage
 
 ```ts
-import { createDendriStore } from "@afterrealism/dendri";
-import { DendriYjsProvider } from "@afterrealism/y-dendri";
+import { createDendriStore } from "@afterrealism/dendri-client";
+import { DendriYjsProvider } from "@afterrealism/dendri-y";
 import * as Y from "yjs";
 
 const room = createDendriStore({
@@ -31,7 +31,7 @@ room.join("my-room");
 The provider only depends on a small `DendriRoomLike` surface, so React, Vue, Svelte, and vanilla apps can use it with their normal UI reactivity.
 
 Call `provider.destroy()`, `room.destroy()`, and `doc.destroy()` during app cleanup.
-# @afterrealism/y-dendri
+# @afterrealism/dendri-y
 
 Minimal [Yjs](https://github.com/yjs/yjs) provider on top of a
 [Dendri](https://dendri.dev) P2P room. Bridges a `Y.Doc` (and optionally an
@@ -40,7 +40,7 @@ Minimal [Yjs](https://github.com/yjs/yjs) provider on top of a
 ## Install
 
 ```bash
-pnpm add @afterrealism/y-dendri yjs y-protocols
+pnpm add @afterrealism/dendri-y yjs y-protocols
 ```
 
 `yjs` and `y-protocols` are peer dependencies — bring your own to avoid dual
@@ -49,8 +49,8 @@ instances breaking CRDT identity.
 ## Usage
 
 ```ts
-import Dendri, { createDendriStore } from "@afterrealism/dendri";
-import { DendriYjsProvider } from "@afterrealism/y-dendri";
+import Dendri, { createDendriStore } from "@afterrealism/dendri-client";
+import { DendriYjsProvider } from "@afterrealism/dendri-y";
 import * as Y from "yjs";
 import { Awareness } from "y-protocols/awareness";
 

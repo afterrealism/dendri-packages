@@ -1,5 +1,5 @@
 {
-	"name": "@afterrealism/dendri",
+	"name": "@afterrealism/dendri-client",
 	"version": "2.3.7",
 	"type": "module",
 	"packageManager": "pnpm@10.30.1",
@@ -13,11 +13,12 @@
 	],
 	"homepage": "https://dendri.dev",
 	"bugs": {
-		"url": "https://github.com/afterrealism/dendri/issues"
+		"url": "https://github.com/afterrealism/dendri-packages/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/afterrealism/dendri.git"
+		"url": "git+https://github.com/afterrealism/dendri-packages.git",
+		"directory": "dendri-client"
 	},
 	"license": "MIT",
 	"main": "./dist/dendri.cjs",

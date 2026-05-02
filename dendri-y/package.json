@@ -1,5 +1,5 @@
 {
-	"name": "@afterrealism/y-dendri",
+	"name": "@afterrealism/dendri-y",
 	"version": "0.1.0",
 	"type": "module",
 	"packageManager": "pnpm@10.30.1",
@@ -14,26 +14,26 @@
 	],
 	"homepage": "https://dendri.dev",
 	"bugs": {
-		"url": "https://github.com/afterrealism/dendri/issues"
+		"url": "https://github.com/afterrealism/dendri-packages/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/afterrealism/dendri.git",
-		"directory": "client-y-dendri"
+		"url": "git+https://github.com/afterrealism/dendri-packages.git",
+		"directory": "dendri-y"
 	},
 	"license": "MIT",
-	"main": "./dist/y-dendri.cjs",
-	"module": "./dist/y-dendri.js",
-	"types": "./dist/y-dendri.d.ts",
+	"main": "./dist/dendri-y.cjs",
+	"module": "./dist/dendri-y.js",
+	"types": "./dist/dendri-y.d.ts",
 	"exports": {
 		".": {
 			"import": {
-				"types": "./dist/y-dendri.d.ts",
-				"default": "./dist/y-dendri.js"
+				"types": "./dist/dendri-y.d.ts",
+				"default": "./dist/dendri-y.js"
 			},
 			"require": {
-				"types": "./dist/y-dendri.d.cts",
-				"default": "./dist/y-dendri.cjs"
+				"types": "./dist/dendri-y.d.cts",
+				"default": "./dist/dendri-y.cjs"
 			}
 		}
 	},
@@ -54,7 +54,7 @@
 	"peerDependencies": {
 		"y-protocols": "^1.0.0",
 		"yjs": "^13.6.0",
-		"@afterrealism/dendri": "^2.3.7"
+		"@afterrealism/dendri-client": "^2.3.7"
 	},
 	"devDependencies": {
 		"tsup": "^8.0.0",

@@ -1,7 +1,7 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-	entry: { "y-dendri": "src/index.ts" },
+	entry: { "dendri-y": "src/index.ts" },
 	format: ["esm", "cjs"],
 	dts: true,
 	sourcemap: true,
