@@ -1,0 +1,99 @@
+{
+	"name": "@afterrealism/dendri",
+	"version": "2.3.7",
+	"type": "module",
+	"packageManager": "pnpm@10.30.1",
+	"description": "Dendri client WebRTC P2P signaling library",
+	"keywords": [
+		"dendri",
+		"webrtc",
+		"p2p",
+		"rtc",
+		"signaling"
+	],
+	"homepage": "https://dendri.dev",
+	"bugs": {
+		"url": "https://github.com/afterrealism/dendri/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/afterrealism/dendri.git"
+	},
+	"license": "MIT",
+	"main": "./dist/dendri.cjs",
+	"module": "./dist/dendri.js",
+	"types": "./dist/dendri.d.ts",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/dendri.d.ts",
+				"default": "./dist/dendri.js"
+			},
+			"require": {
+				"types": "./dist/dendri.d.cts",
+				"default": "./dist/dendri.cjs"
+			}
+		},
+		"./store": {
+			"import": {
+				"types": "./dist/store.d.ts",
+				"default": "./dist/store.js"
+			},
+			"require": {
+				"types": "./dist/store.d.cts",
+				"default": "./dist/store.cjs"
+			}
+		},
+		"./msgpack": {
+			"import": {
+				"types": "./dist/serializer.msgpack.d.ts",
+				"default": "./dist/serializer.msgpack.js"
+			},
+			"require": {
+				"types": "./dist/serializer.msgpack.d.cts",
+				"default": "./dist/serializer.msgpack.cjs"
+			}
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
+	"scripts": {
+		"build": "tsup",
+		"build:watch": "tsup --watch",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"bench": "vitest bench",
+		"coverage": "vitest run --coverage",
+		"lint": "biome check src/ tests/",
+		"lint:fix": "biome check --write src/ tests/",
+		"format": "biome format --write src/ tests/",
+		"validate": "publint && attw --pack --profile node16",
+		"prepublishOnly": "npm run build",
+		"clean": "rm -rf dist"
+	},
+	"dependencies": {
+		"@msgpack/msgpack": "^2.8.0",
+		"eventemitter3": "^4.0.7",
+		"eventsource-parser": "^3.0.6",
+		"peerjs-js-binarypack": "^2.1.0",
+		"webrtc-adapter": "^9.0.0"
+	},
+	"devDependencies": {
+		"@arethetypeswrong/cli": "^0.17.0",
+		"@biomejs/biome": "^2.0.0",
+		"@vitest/coverage-v8": "^3.0.0",
+		"fast-check": "^4.6.0",
+		"jsdom": "^25.0.1",
+		"mock-socket": "^9.0.0",
+		"publint": "^0.3.0",
+		"tsup": "^8.0.0",
+		"typescript": "^5.7.0",
+		"vitest": "^3.0.0"
+	}
+}

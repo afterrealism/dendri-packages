@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title></title>
+		<link rel="stylesheet" href="../style.css" />
+	</head>
+	<body>
+		<h1>ID-TAKEN</h1>
+		<div id="messages"></div>
+		<div id="error-message"></div>
+		<script src="/dist/dendri.js"></script>
+		<script type="application/javascript">
+			/**
+			 * @type {typeof import("../..").Dendri}
+			 */
+			const Dendri = window.dendri.Dendri;
+
+			const params = new URLSearchParams(document.location.search);
+
+			const messages = document.getElementById("messages");
+			const errorMessage = document.getElementById("error-message");
+
+			// Peer A should be created without an error
+			const peerA = new Dendri({ key: params.get("key") })
+				.once(
+					"error",
+					(err) => (errorMessage.textContent += JSON.stringify(err)),
+				)
+				.once("open", (id) => {
+					// Create 10 new `Peer`s that will try to steel A's id
+					let peers_try_to_take = Array.from(
+						{ length: 10 },
+						(_, i) =>
+							new Promise((resolve, reject) =>
+								new Dendri(id, { key: params.get("BYPASS_WAF") })
+									.once("open", () =>
+										reject(`Peer ${i} failed! Connection got established.`),
+									)
+									.once("error", (error) => {
+										if (error.type === "unavailable-id") {
+											resolve(`ID already taken. (${i})`);
+										} else {
+											reject(error);
+										}
+									}),
+							),
+					);
+					Promise.all(peers_try_to_take)
+						.then(() => (messages.textContent = "No ID takeover"))
+						.catch(
+							(error) => (errorMessage.textContent += JSON.stringify(error)),
+						);
+				});
+		</script>
+	</body>
+</html>

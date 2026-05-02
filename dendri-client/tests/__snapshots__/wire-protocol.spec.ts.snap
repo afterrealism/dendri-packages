@@ -1,0 +1,38 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Wire Protocol Snapshots > ACK request format > matches expected shape 1`] = `"{"__ackId":"ack_1_1234567890","data":{"hello":"world"}}"`;
+
+exports[`Wire Protocol Snapshots > Encrypted payload format > matches expected shape 1`] = `"{"__encrypted":{"iv":"base64iv==","ciphertext":"base64data=="}}"`;
+
+exports[`Wire Protocol Snapshots > KEY-EXCHANGE format > matches expected shape 1`] = `"{"type":"KEY-EXCHANGE","src":"peer-a","dst":"peer-b","payload":{"publicKey":{"kty":"EC","crv":"P-256","x":"...","y":"..."}}}"`;
+
+exports[`Wire Protocol Snapshots > RPC request format > matches expected shape 1`] = `"{"__rpc":true,"id":"rpc_1_1234567890","method":"getScore","payload":{"level":1},"sender":"peer-abc"}"`;
+
+exports[`Wire Protocol Snapshots > RPC response format > error matches expected shape 1`] = `"{"__rpc_response":true,"id":"rpc_1_1234567890","error":{"code":1505,"message":"Method not found: foo"}}"`;
+
+exports[`Wire Protocol Snapshots > RPC response format > success matches expected shape 1`] = `"{"__rpc_response":true,"id":"rpc_1_1234567890","result":{"score":42}}"`;
+
+exports[`Wire Protocol Snapshots > ServerMessageType values > all message types match expected wire format 1`] = `
+{
+  "Ack": "ACK",
+  "Answer": "ANSWER",
+  "Candidate": "CANDIDATE",
+  "Data": "DATA",
+  "Error": "ERROR",
+  "Expire": "EXPIRE",
+  "Heartbeat": "HEARTBEAT",
+  "HostMigrate": "HOST-MIGRATE",
+  "IdTaken": "ID-TAKEN",
+  "InvalidKey": "INVALID-KEY",
+  "KeyExchange": "KEY-EXCHANGE",
+  "Leave": "LEAVE",
+  "Offer": "OFFER",
+  "Open": "OPEN",
+  "PresenceUpdate": "PRESENCE-UPDATE",
+  "RoomJoin": "ROOM-JOIN",
+  "RoomLeave": "ROOM-LEAVE",
+  "RoomPeers": "ROOM-PEERS",
+}
+`;
+
+exports[`Wire Protocol Snapshots > Topic envelope format > matches expected shape 1`] = `"{"__topic":"cursor","__data":{"x":10,"y":20}}"`;

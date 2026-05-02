@@ -1,0 +1,65 @@
+{
+	"name": "@afterrealism/y-dendri",
+	"version": "0.1.0",
+	"type": "module",
+	"packageManager": "pnpm@10.30.1",
+	"description": "Yjs CRDT provider on top of Dendri P2P rooms",
+	"keywords": [
+		"yjs",
+		"crdt",
+		"dendri",
+		"webrtc",
+		"p2p",
+		"collaboration"
+	],
+	"homepage": "https://dendri.dev",
+	"bugs": {
+		"url": "https://github.com/afterrealism/dendri/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/afterrealism/dendri.git",
+		"directory": "client-y-dendri"
+	},
+	"license": "MIT",
+	"main": "./dist/y-dendri.cjs",
+	"module": "./dist/y-dendri.js",
+	"types": "./dist/y-dendri.d.ts",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/y-dendri.d.ts",
+				"default": "./dist/y-dendri.js"
+			},
+			"require": {
+				"types": "./dist/y-dendri.d.cts",
+				"default": "./dist/y-dendri.cjs"
+			}
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
+	"scripts": {
+		"build": "tsup",
+		"build:watch": "tsup --watch",
+		"typecheck": "tsc --noEmit",
+		"prepublishOnly": "npm run build",
+		"clean": "rm -rf dist"
+	},
+	"peerDependencies": {
+		"y-protocols": "^1.0.0",
+		"yjs": "^13.6.0",
+		"@afterrealism/dendri": "^2.3.7"
+	},
+	"devDependencies": {
+		"tsup": "^8.0.0",
+		"typescript": "^5.7.0",
+		"y-protocols": "^1.0.7",
+		"yjs": "^13.6.30"
+	}
+}
