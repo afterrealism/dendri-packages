@@ -107,6 +107,9 @@ export enum ServerMessageType {
 	HostMigrate = "HOST-MIGRATE", // Host migration notification.
 	PresenceUpdate = "PRESENCE-UPDATE", // Presence data broadcast.
 	KeyExchange = "KEY-EXCHANGE", // E2E encryption key exchange for relay.
+	ConnectRequest = "CONNECT-REQUEST", // Address exchange for Connection Reversal (H1)
+	DcutrConnect = "DCUTR-CONNECT", // DCUtR hole punch address exchange (H2)
+	DcutrSync = "DCUTR-SYNC", // DCUtR hole punch synchronization (H2)
 }
 
 export enum TransportMode {

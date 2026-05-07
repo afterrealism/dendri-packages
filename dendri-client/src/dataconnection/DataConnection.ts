@@ -68,6 +68,7 @@ export abstract class DataConnection extends BaseConnection<
 		this.dataChannel.onopen = () => {
 			logger.log(`DC#${this.connectionId} dc connection success`);
 			this._open = true;
+			this._applyAdaptiveBuffer(dc);
 			this.emit("open");
 		};
 
@@ -75,6 +76,24 @@ export abstract class DataConnection extends BaseConnection<
 			logger.log(`DC#${this.connectionId} dc closed for:`, this.peer);
 			this.close();
 		};
+	}
+
+	private _applyAdaptiveBuffer(dc: RTCDataChannel): void {
+		const pc = this.peerConnection;
+		if (!pc || typeof (pc as any).getStats !== "function") return;
+		pc.getStats().then((stats: RTCStatsReport) => {
+			let rtt: number | null = null;
+			stats.forEach((report: any) => {
+				if (report.type === "candidate-pair" && report.state === "succeeded" && report.currentRoundTripTime) {
+					rtt = report.currentRoundTripTime * 1000;
+				}
+			});
+			if (rtt !== null) {
+				const bdp = 12.5 * 1024 * 1024 * (rtt / 1000);
+				const optimal = Math.max(1 * 1024 * 1024, Math.min(32 * 1024 * 1024, Math.ceil(bdp)));
+				dc.bufferedAmountLowThreshold = optimal;
+			}
+		}).catch(() => {});
 	}
 
 	/**

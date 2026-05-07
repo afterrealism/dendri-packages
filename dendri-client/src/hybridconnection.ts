@@ -86,7 +86,10 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 		logger.log(
 			`HybridConnection: start peer=${this.peer} iceTimeout=${this._options.iceTimeout ?? 10_000}ms encryptRelay=${this._encryptRelay}`,
 		);
-		this._attemptWebRTC();
+		this._tryConnectionReversal().then((direct) => {
+			if (direct) return;
+			this._attemptWebRTC();
+		});
 	}
 
 	/** Send data through the best available transport, optionally tagged with a topic. */
@@ -572,5 +575,97 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 			this._upgradeAttempts++;
 			this._attemptWebRTC();
 		}, interval);
+	}
+
+	private async _tryConnectionReversal(): Promise<boolean> {
+		try {
+			const resp = await new Promise<unknown>((resolve, reject) => {
+				const timer = setTimeout(() => reject(new Error("timeout")), 3000);
+				const handler = (data: unknown) => {
+					clearTimeout(timer);
+					this._provider.off(ServerMessageType.ConnectRequest, handler);
+					resolve(data);
+				};
+				this._provider.on(ServerMessageType.ConnectRequest, handler);
+				this._provider.socket.send({
+					type: ServerMessageType.ConnectRequest,
+					payload: { peer: this.peer },
+				});
+			});
+			const addr = (resp as any)?.address;
+			if (!addr) return false;
+			const pc = new RTCPeerConnection(this._provider.options.config);
+			const dc = pc.createDataChannel("probe", { id: 0 });
+			await new Promise<void>((resolve, reject) => {
+				const timer = setTimeout(() => { pc.close(); reject(new Error("direct-dial-timeout")); }, 2500);
+				dc.onopen = () => { clearTimeout(timer); resolve(); };
+				dc.onerror = () => { clearTimeout(timer); pc.close(); reject(new Error("dc-error")); };
+			});
+			this._dataConnection = undefined as any;
+			this._setMode(TransportMode.WebRTC);
+			pc.close();
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	private async _gatherSrflxCandidates(): Promise<string[]> {
+		const pc = new RTCPeerConnection({ iceServers: this._provider.options.config?.iceServers });
+		pc.createDataChannel("probe");
+		const offer = await pc.createOffer();
+		await pc.setLocalDescription(offer);
+		const candidates: string[] = [];
+		await new Promise<void>((resolve) => {
+			const timer = setTimeout(resolve, 2000);
+			pc.onicecandidate = (evt) => {
+				if (!evt.candidate) { clearTimeout(timer); resolve(); return; }
+				if (!evt.candidate.candidate.includes("typ host")) {
+					candidates.push(evt.candidate.candidate);
+				}
+			};
+		});
+		pc.close();
+		return candidates;
+	}
+
+	async _dcutrHolePunch(): Promise<boolean> {
+		try {
+			const localAddrs = await this._gatherSrflxCandidates();
+			const t0 = performance.now();
+			const peerAddrs = await new Promise<string[]>((resolve, reject) => {
+				const timer = setTimeout(() => reject(new Error("dcutr-timeout")), 8000);
+				const handler = (data: unknown) => {
+					clearTimeout(timer);
+					this._provider.off(ServerMessageType.DcutrConnect, handler);
+					resolve(((data as any)?.addresses ?? []) as string[]);
+				};
+				this._provider.on(ServerMessageType.DcutrConnect, handler);
+				this._provider.socket.send({
+					type: ServerMessageType.DcutrConnect,
+					payload: { addresses: localAddrs },
+				});
+			});
+			const relayRtt = performance.now() - t0;
+			this._provider.socket.send({ type: ServerMessageType.DcutrSync, payload: {} });
+			await new Promise((r) => setTimeout(r, relayRtt / 2));
+			for (const addr of peerAddrs.slice(0, 4)) {
+				try {
+					const pc = new RTCPeerConnection(this._provider.options.config);
+					await new Promise<void>((resolve, reject) => {
+						const timer = setTimeout(() => { pc.close(); reject(new Error("dc-dial-timeout")); }, 5000);
+						const dc = pc.createDataChannel("dcutr");
+						dc.onopen = () => { clearTimeout(timer); resolve(); };
+					});
+					this._dataConnection = undefined as any;
+					this._setMode(TransportMode.WebRTC);
+					pc.close();
+					return true;
+				} catch { continue; }
+			}
+			return false;
+		} catch {
+			return false;
+		}
 	}
 }
