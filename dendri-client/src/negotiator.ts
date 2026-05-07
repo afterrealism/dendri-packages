@@ -18,6 +18,7 @@ export class Negotiator<
 	T extends BaseConnection<Events | BaseConnectionEvents>,
 > {
 	private _pendingCandidates: RTCIceCandidate[] = [];
+	private _iceCandidateFilter: ((c: RTCIceCandidateInit) => boolean) | null = null;
 
 	constructor(readonly connection: T) {}
 

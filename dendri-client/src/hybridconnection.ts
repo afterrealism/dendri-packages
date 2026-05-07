@@ -590,10 +590,10 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 				const timer = setTimeout(() => reject(new Error("timeout")), 3000);
 				const handler = (data: unknown) => {
 					clearTimeout(timer);
-					this._provider.off(ServerMessageType.ConnectRequest, handler);
+					(this._provider as any).off(ServerMessageType.ConnectRequest, handler);
 					resolve(data);
 				};
-				this._provider.on(ServerMessageType.ConnectRequest, handler);
+				(this._provider as any).on(ServerMessageType.ConnectRequest, handler);
 				this._provider.socket.send({
 					type: ServerMessageType.ConnectRequest,
 					payload: { peer: this.peer },
@@ -644,10 +644,10 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 				const timer = setTimeout(() => reject(new Error("dcutr-timeout")), 8000);
 				const handler = (data: unknown) => {
 					clearTimeout(timer);
-					this._provider.off(ServerMessageType.DcutrConnect, handler);
+					(this._provider as any).off(ServerMessageType.DcutrConnect, handler);
 					resolve(((data as any)?.addresses ?? []) as string[]);
 				};
-				this._provider.on(ServerMessageType.DcutrConnect, handler);
+				(this._provider as any).on(ServerMessageType.DcutrConnect, handler);
 				this._provider.socket.send({
 					type: ServerMessageType.DcutrConnect,
 					payload: { addresses: localAddrs },
@@ -656,7 +656,7 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 			const relayRtt = performance.now() - t0;
 			this._provider.socket.send({ type: ServerMessageType.DcutrSync, payload: {} });
 			await new Promise((r) => setTimeout(r, relayRtt / 2));
-			for (const addr of peerAddrs.slice(0, 4)) {
+			for (let i = 0; i < Math.min(peerAddrs.length, 4); i++) {
 				try {
 					const pc = new RTCPeerConnection(this._provider.options.config);
 					await new Promise<void>((resolve, reject) => {
