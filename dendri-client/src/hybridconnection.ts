@@ -86,6 +86,12 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 		logger.log(
 			`HybridConnection: start peer=${this.peer} iceTimeout=${this._options.iceTimeout ?? 10_000}ms encryptRelay=${this._encryptRelay}`,
 		);
+
+		if (typeof this._provider?.on !== "function") {
+			this._attemptWebRTC();
+			return;
+		}
+
 		this._tryConnectionReversal().then((direct) => {
 			if (direct) return;
 			this._attemptWebRTC();
@@ -578,6 +584,7 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 	}
 
 	private async _tryConnectionReversal(): Promise<boolean> {
+		if (typeof this._provider?.on !== "function") return false;
 		try {
 			const resp = await new Promise<unknown>((resolve, reject) => {
 				const timer = setTimeout(() => reject(new Error("timeout")), 3000);
