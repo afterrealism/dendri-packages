@@ -138,3 +138,10 @@ export enum ConnectionQuality {
 	Poor = "poor",
 	Unknown = "unknown",
 }
+
+export enum TopicClass {
+	/** Reliable, persisted, replayed — data integrity critical (Yjs updates, RPC) */
+	Persistent = "persistent",
+	/** Best-effort, not replayed — ephemeral UX state (cursor, scroll, typing indicators) */
+	Ephemeral = "ephemeral",
+}

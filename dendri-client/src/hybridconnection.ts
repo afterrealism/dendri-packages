@@ -83,6 +83,9 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 			return;
 		}
 
+		logger.log(
+			`HybridConnection: start peer=${this.peer} iceTimeout=${this._options.iceTimeout ?? 10_000}ms encryptRelay=${this._encryptRelay}`,
+		);
 		this._attemptWebRTC();
 	}
 
@@ -459,11 +462,15 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 		// Set ICE timeout — if WebRTC hasn't opened by then, fall back.
 		this._iceTimer = setTimeout(() => {
 			if (this._mode !== TransportMode.WebRTC) {
+				logger.warn(
+					`HybridConnection: ICE timeout after ${iceTimeout}ms for ${this.peer}, falling back to relay`,
+				);
 				this._fallbackToRelay();
 			}
 		}, iceTimeout);
 
 		this._dataConnection.on("open", () => {
+			logger.log(`HybridConnection: WebRTC opened to ${this.peer} (attempt ${this._upgradeAttempts + 1})`);
 			this._clearIceTimer();
 			this._clearUpgradeTimer();
 			this._upgradeAttempts = 0;
@@ -516,6 +523,7 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 	/** Update the transport mode and emit if changed. */
 	private _setMode(mode: TransportMode): void {
 		if (this._mode !== mode) {
+			logger.log(`HybridConnection: transport ${this._mode} -> ${mode} for ${this.peer}`);
 			this._mode = mode;
 			this.emit("transportChanged", mode);
 		}

@@ -54,6 +54,15 @@ export class Negotiator<
 
 		const peerConnection = new RTCPeerConnection(this.connection.provider?.options.config);
 
+		// H3: ICE candidate privacy filtering
+		if (this.connection.provider?.options.ipPolicy === "public") {
+			const isPublicCandidate = (c: RTCIceCandidateInit) => {
+				const sdp = c.candidate ?? "";
+				return !sdp.includes("typ host");
+			};
+			this._iceCandidateFilter = isPublicCandidate;
+		}
+
 		this._setupListeners(peerConnection);
 
 		return peerConnection;
@@ -71,6 +80,11 @@ export class Negotiator<
 
 		peerConnection.onicecandidate = (evt) => {
 			if (!evt.candidate?.candidate) return;
+
+			// H3: Filter host candidates for IP privacy
+			if (this._iceCandidateFilter && !this._iceCandidateFilter(evt.candidate)) {
+				return;
+			}
 
 			logger.log(`Received ICE candidates for ${peerId}:`, evt.candidate);
 

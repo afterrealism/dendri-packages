@@ -20,7 +20,7 @@
 		"url": "git+https://github.com/afterrealism/dendri-packages.git",
 		"directory": "dendri-client"
 	},
-	"license": "MIT",
+	"license": "Apache-2.0",
 	"main": "./dist/dendri.cjs",
 	"module": "./dist/dendri.js",
 	"types": "./dist/dendri.d.ts",

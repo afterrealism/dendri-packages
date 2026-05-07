@@ -21,7 +21,7 @@
 		"url": "git+https://github.com/afterrealism/dendri-packages.git",
 		"directory": "dendri-y"
 	},
-	"license": "MIT",
+	"license": "Apache-2.0",
 	"main": "./dist/dendri-y.cjs",
 	"module": "./dist/dendri-y.js",
 	"types": "./dist/dendri-y.d.ts",

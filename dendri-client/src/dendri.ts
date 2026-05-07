@@ -81,6 +81,12 @@ class DendriOptions implements DendriOption {
 	validateMetadata?: (metadata: unknown) => boolean;
 	/** Signaling transport: 'websocket' (default), 'sse', 'polling', or 'auto' (tries WS then SSE then polling) */
 	signalingTransport?: "websocket" | "sse" | "polling" | "auto";
+	/**
+	 * ICE candidate privacy policy.
+	 * - 'all': RFC 8828 mode 1 — all candidates including host IPs (default)
+	 * - 'public': RFC 8828 mode 3 — only STUN/TURN (srflx + relay) candidates
+	 */
+	ipPolicy?: "all" | "public";
 }
 
 export type { DendriOptions };
