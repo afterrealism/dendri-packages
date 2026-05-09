@@ -53,11 +53,11 @@ export class API {
 		}
 	}
 
-	/** Fetch TURN credentials from the signaling server's GET /turn endpoint. */
+	/** Fetch TURN credentials from the signaling server's turn-credentials endpoint. */
 	async getTurnCredentials(): Promise<RTCIceServer[]> {
 		const protocol = this._options.secure ? "https" : "http";
-		const { host, port } = this._options;
-		const url = `${protocol}://${host}:${port}/turn`;
+		const { host, port, path, key } = this._options;
+		const url = `${protocol}://${host}:${port}${path}${key}/turn-credentials`;
 
 		try {
 			const controller = new AbortController();
