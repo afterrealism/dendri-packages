@@ -164,7 +164,7 @@ describe("DendriServerAPI", () => {
 	});
 
 	describe("getTurnCredentials", () => {
-		it("calls /turn endpoint", async () => {
+		it("calls /{key}/turn-credentials endpoint", async () => {
 			const turnData = {
 				iceServers: [{ urls: "turn:example.com", username: "u", credential: "p" }],
 			};
@@ -178,7 +178,7 @@ describe("DendriServerAPI", () => {
 			const creds = await api.getTurnCredentials();
 			expect(creds.iceServers).toHaveLength(1);
 			expect(creds.iceServers[0].urls).toBe("turn:example.com");
-			expect(mockFetch).toHaveBeenCalledWith("https://signal.dendri.dev/turn");
+			expect(mockFetch).toHaveBeenCalledWith("https://signal.dendri.dev/dendri/turn-credentials");
 		});
 
 		it("throws on non-ok response", async () => {

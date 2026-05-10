@@ -15,7 +15,7 @@ export interface DendriOption {
 	config?: RTCConfiguration;
 	debug?: number;
 	referrerPolicy?: ReferrerPolicy;
-	/** Auto-fetch TURN credentials from the signaling server's GET /turn endpoint. */
+	/** Auto-fetch TURN credentials from the signaling server's GET /{key}/turn-credentials endpoint. */
 	fetchTurnCredentials?: boolean;
 	/** Optional JWT for authenticated connections. */
 	jwt?: string;

@@ -59,7 +59,7 @@ class DendriOptions implements DendriOption {
 	 *
 	 * Defaults to {@apilink util.defaultConfig}
 	 */
-	config?: any;
+	config?: RTCConfiguration;
 	/**
 	 * Set to true `true` if you're using TLS.
 	 * :::danger
@@ -69,7 +69,7 @@ class DendriOptions implements DendriOption {
 	secure?: boolean;
 	pingInterval?: number;
 	referrerPolicy?: ReferrerPolicy;
-	logFunction?: (logLevel: LogLevel, ...rest: any[]) => void;
+	logFunction?: (logLevel: LogLevel, ...rest: unknown[]) => void;
 	serializers?: SerializerMapping;
 	/** Auto-fetch TURN credentials from the signaling server's GET /turn endpoint. */
 	fetchTurnCredentials?: boolean;
@@ -345,7 +345,7 @@ export class Dendri extends EventEmitterWithError<DendriErrorType, DendriEvents>
 		}
 
 		// Ensure alphanumeric id
-		if (!!userId && !util.validateId(userId)) {
+		if (userId && !util.validateId(userId)) {
 			this._delayedAbort(DendriErrorType.InvalidID, `ID "${userId}" is invalid`);
 			return;
 		}

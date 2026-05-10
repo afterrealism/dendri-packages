@@ -43,7 +43,7 @@ export class DendriServerAPI {
 
 	/** Get TURN credentials */
 	async getTurnCredentials(): Promise<{ iceServers: RTCIceServer[] }> {
-		const res = await fetch(`${this._baseUrl}/turn`);
+		const res = await fetch(`${this._baseUrl}/${this._key}/turn-credentials`);
 		if (!res.ok) throw new Error(`TURN credentials failed: ${res.status}`);
 		return res.json();
 	}
