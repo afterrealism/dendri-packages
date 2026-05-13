@@ -166,8 +166,20 @@ export class Room extends EventEmitter<RoomEvents> {
 			}
 		}
 
-		// Fallback: relay via signaling server when WebRTC is unavailable.
-		if (!sentViaWebRTC && this._peer?.socket) {
+		// Relay fallback: always send via the signaling server when
+		// `enableRelay` is configured. A DataConnection may report
+		// "open" (ICE succeeded) but fail to deliver packets through
+		// restrictive networks (VPNs, symmetric NAT, UDP blocked).
+		// The relay ensures messages reach peers regardless of P2P
+		// connectivity — duplicates on the receiving end are harmless
+		// because topic envelopes are idempotent.
+		if (this._dendriOptions?.enableRelay && this._peer?.socket) {
+			this._peer.socket.send({
+				type: ServerMessageType.Data,
+				room: this._roomId,
+				payload: wire,
+			});
+		} else if (!sentViaWebRTC && this._peer?.socket) {
 			this._peer.socket.send({
 				type: ServerMessageType.Data,
 				room: this._roomId,
@@ -205,7 +217,13 @@ export class Room extends EventEmitter<RoomEvents> {
 			}
 		}
 
-		if (!sentViaWebRTC && this._peer?.socket) {
+		if (this._dendriOptions?.enableRelay && this._peer?.socket) {
+			this._peer.socket.send({
+				type: ServerMessageType.Data,
+				room: this._roomId,
+				payload: wire,
+			});
+		} else if (!sentViaWebRTC && this._peer?.socket) {
 			this._peer.socket.send({
 				type: ServerMessageType.Data,
 				room: this._roomId,
@@ -440,10 +458,9 @@ export class Room extends EventEmitter<RoomEvents> {
 			const remotePeerId = conn.peer;
 			this._connections.set(remotePeerId, conn);
 			this._knownPeers.add(remotePeerId);
+			this.emit("peerJoined", remotePeerId);
 
 			conn.on("open", () => {
-				this.emit("peerJoined", remotePeerId);
-
 				// Notify existing clients about the new peer
 				for (const [peerId, c] of this._connections) {
 					if (peerId !== remotePeerId && c.open) {
@@ -894,6 +911,16 @@ export class Room extends EventEmitter<RoomEvents> {
 		const conn = this._connections.get(peerId);
 		if (conn?.open) {
 			conn.send(data);
+			// When relay is enabled, also send via signaling server
+			// as backup for restrictive networks (VPN, symmetric NAT).
+			if (this._dendriOptions?.enableRelay && this._peer?.socket) {
+				this._peer.socket.send({
+					type: ServerMessageType.Data,
+					dst: peerId,
+					room: this._roomId,
+					payload: data,
+				});
+			}
 			return;
 		}
 

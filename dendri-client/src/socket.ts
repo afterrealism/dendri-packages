@@ -70,7 +70,7 @@ export class Socket extends SignalingTransport {
 			wsUrl += `&jwt=${encodeURIComponent(this._jwt)}`;
 		}
 
-		if (!!this._socket || !this._disconnected) {
+		if (this._socket || !this._disconnected) {
 			return;
 		}
 

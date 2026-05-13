@@ -123,6 +123,15 @@ peer.on("connection", (conn) => {
 - **Auto Reconnect** - Exponential backoff with jitter
 - **MsgPack Serializer** - Binary serialization for smaller payloads
 
+## Multi-Tab Reconnection
+
+When two browser tabs use the same `peer_id` to connect to the same signaling server:
+
+- **Same peer_id, same token** — Treated as a reconnection. The server replaces the old WebSocket with the new one. Room memberships and queued messages are preserved. The first tab eventually receives a disconnect event via heartbeat timeout.
+- **Same peer_id, different token** — Rejected with an `ID_TAKEN` error. Prevents accidental or malicious ID hijacking.
+
+For multi-tab apps, use `BroadcastChannel` or `localStorage` to coordinate a single Dendri connection across tabs, or let each tab create its own instance with distinct `peer_id` values and communicate through rooms.
+
 ## MsgPack Serializer
 
 For binary serialization instead of JSON:

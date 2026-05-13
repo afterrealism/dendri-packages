@@ -193,9 +193,9 @@ export function createDendriStore(input?: CreateDendriStoreInput): DendriStore {
 			id: string,
 			opts?: DendriOptions,
 		) => Dendri);
-	const dendriOptions = (advanced
-		? (input.dendriOptions ?? {})
-		: ((input as DendriOptions | undefined) ?? {})) as DendriOptions;
+	const dendriOptions = (
+		advanced ? (input.dendriOptions ?? {}) : ((input as DendriOptions | undefined) ?? {})
+	) as DendriOptions;
 	const roomOptions: RoomOptions | undefined = advanced ? input.roomOptions : undefined;
 
 	let room: Room | null = null;
@@ -338,10 +338,7 @@ export function createDendriStore(input?: CreateDendriStoreInput): DendriStore {
 		room?.broadcast(data, opts);
 	}
 
-	function broadcastBinary(
-		bytes: Uint8Array,
-		opts: { readonly topic: string },
-	): void {
+	function broadcastBinary(bytes: Uint8Array, opts: { readonly topic: string }): void {
 		room?.broadcastBinary(bytes, opts);
 	}
 

@@ -479,7 +479,9 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 		}, iceTimeout);
 
 		this._dataConnection.on("open", () => {
-			logger.log(`HybridConnection: WebRTC opened to ${this.peer} (attempt ${this._upgradeAttempts + 1})`);
+			logger.log(
+				`HybridConnection: WebRTC opened to ${this.peer} (attempt ${this._upgradeAttempts + 1})`,
+			);
 			this._clearIceTimer();
 			this._clearUpgradeTimer();
 			this._upgradeAttempts = 0;
@@ -604,9 +606,19 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 			const pc = new RTCPeerConnection(this._provider.options.config);
 			const dc = pc.createDataChannel("probe", { id: 0 });
 			await new Promise<void>((resolve, reject) => {
-				const timer = setTimeout(() => { pc.close(); reject(new Error("direct-dial-timeout")); }, 2500);
-				dc.onopen = () => { clearTimeout(timer); resolve(); };
-				dc.onerror = () => { clearTimeout(timer); pc.close(); reject(new Error("dc-error")); };
+				const timer = setTimeout(() => {
+					pc.close();
+					reject(new Error("direct-dial-timeout"));
+				}, 2500);
+				dc.onopen = () => {
+					clearTimeout(timer);
+					resolve();
+				};
+				dc.onerror = () => {
+					clearTimeout(timer);
+					pc.close();
+					reject(new Error("dc-error"));
+				};
 			});
 			this._dataConnection = undefined as any;
 			this._setMode(TransportMode.WebRTC);
@@ -626,7 +638,11 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 		await new Promise<void>((resolve) => {
 			const timer = setTimeout(resolve, 2000);
 			pc.onicecandidate = (evt) => {
-				if (!evt.candidate) { clearTimeout(timer); resolve(); return; }
+				if (!evt.candidate) {
+					clearTimeout(timer);
+					resolve();
+					return;
+				}
 				if (!evt.candidate.candidate.includes("typ host")) {
 					candidates.push(evt.candidate.candidate);
 				}
@@ -660,15 +676,21 @@ export class HybridConnection extends EventEmitter<HybridConnectionEvents> {
 				try {
 					const pc = new RTCPeerConnection(this._provider.options.config);
 					await new Promise<void>((resolve, reject) => {
-						const timer = setTimeout(() => { pc.close(); reject(new Error("dc-dial-timeout")); }, 5000);
+						const timer = setTimeout(() => {
+							pc.close();
+							reject(new Error("dc-dial-timeout"));
+						}, 5000);
 						const dc = pc.createDataChannel("dcutr");
-						dc.onopen = () => { clearTimeout(timer); resolve(); };
+						dc.onopen = () => {
+							clearTimeout(timer);
+							resolve();
+						};
 					});
 					this._dataConnection = undefined as any;
 					this._setMode(TransportMode.WebRTC);
 					pc.close();
 					return true;
-				} catch { continue; }
+				} catch {}
 			}
 			return false;
 		} catch {

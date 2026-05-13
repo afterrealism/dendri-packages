@@ -81,19 +81,25 @@ export abstract class DataConnection extends BaseConnection<
 	private _applyAdaptiveBuffer(dc: RTCDataChannel): void {
 		const pc = this.peerConnection;
 		if (!pc || typeof (pc as any).getStats !== "function") return;
-		pc.getStats().then((stats: RTCStatsReport) => {
-			let rtt: number | null = null;
-			stats.forEach((report: any) => {
-				if (report.type === "candidate-pair" && report.state === "succeeded" && report.currentRoundTripTime) {
-					rtt = report.currentRoundTripTime * 1000;
+		pc.getStats()
+			.then((stats: RTCStatsReport) => {
+				let rtt: number | null = null;
+				stats.forEach((report: any) => {
+					if (
+						report.type === "candidate-pair" &&
+						report.state === "succeeded" &&
+						report.currentRoundTripTime
+					) {
+						rtt = report.currentRoundTripTime * 1000;
+					}
+				});
+				if (rtt !== null) {
+					const bdp = 12.5 * 1024 * 1024 * (rtt / 1000);
+					const optimal = Math.max(1 * 1024 * 1024, Math.min(32 * 1024 * 1024, Math.ceil(bdp)));
+					dc.bufferedAmountLowThreshold = optimal;
 				}
-			});
-			if (rtt !== null) {
-				const bdp = 12.5 * 1024 * 1024 * (rtt / 1000);
-				const optimal = Math.max(1 * 1024 * 1024, Math.min(32 * 1024 * 1024, Math.ceil(bdp)));
-				dc.bufferedAmountLowThreshold = optimal;
-			}
-		}).catch(() => {});
+			})
+			.catch(() => {});
 	}
 
 	/**

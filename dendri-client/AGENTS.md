@@ -25,18 +25,18 @@ Hotspots: `dendri.ts` (1149 LOC) is the main client class; `room.ts` (936) holds
 
 ```
 src/
-├── dendri.ts (1149)        # DendriClient class — main export, transport orchestration
+├── dendri.ts (1155)        # DendriClient class — main export, transport orchestration
 ├── room.ts (936)           # Room/peer state, presence, host migration
 ├── transport/              # WebSocket, SSE, long-poll implementations
-├── store/                  # createDendriStore — pending-listener queue (export: ./store)
-└── codecs/msgpack.ts       # Wire codec (export: ./msgpack)
+├── store.ts (547)          # createDendriStore — pending-listener queue (export: ./store)
+└── dataconnection/StreamConnection/MsgPack.ts  # Wire codec (export: ./msgpack)
 ```
 
 `createDendriStore` queues listeners while the underlying client is still connecting, then flushes on connect — assume that ordering when adding store APIs.
 
 **tsup bundling rationale:** the SDK ships pre-bundled (not just transpiled) so SvelteKit/Next.js SSR can `require()` it without choking on bare ESM-only deps. Don't replace tsup with plain `tsc` without checking SSR consumers.
 
-**Versioning:** currently `2.3.7` (see `package.json`).
+**Versioning:** currently `2.4.0` (see `package.json`).
 
 ## No Framework Coupling
 
