@@ -6,7 +6,13 @@ const { version } = JSON.parse(readFileSync("./package.json", "utf-8"));
 export default defineConfig([
 	// ESM + CJS for bundlers/Node.js
 	{
-		entry: { dendri: "src/index.ts", store: "src/store.ts" },
+		entry: {
+			dendri: "src/index.ts",
+			store: "src/store.ts",
+			react: "src/adapters/react.ts",
+			vue: "src/adapters/vue.ts",
+			svelte: "src/adapters/svelte.ts",
+		},
 		format: ["esm", "cjs"],
 		dts: true,
 		sourcemap: true,

@@ -28,11 +28,44 @@ import { SSETransport } from "./sse-transport";
 import type { SignalingTransport } from "./transport";
 import { util } from "./util";
 
+/** Expand a full server URL ("wss://signal.example.com[:port][/path]") into host/port/secure/path options. */
+export function parseServerUrl(
+	url: string,
+): Pick<DendriOptions, "host" | "port" | "secure" | "path"> {
+	let parsed: URL;
+	try {
+		parsed = new URL(url);
+	} catch {
+		throw new Error(
+			`Invalid Dendri "url" option: "${url}". Expected a full URL like "wss://signal.example.com".`,
+		);
+	}
+	const secure = parsed.protocol === "wss:" || parsed.protocol === "https:";
+	if (!secure && parsed.protocol !== "ws:" && parsed.protocol !== "http:") {
+		throw new Error(
+			`Invalid Dendri "url" protocol: "${parsed.protocol}". Use wss://, ws://, https://, or http://.`,
+		);
+	}
+	return {
+		host: parsed.hostname,
+		port: parsed.port ? Number(parsed.port) : secure ? 443 : 80,
+		secure,
+		path: parsed.pathname || "/",
+	};
+}
+
 class DendriOptions implements DendriOption {
 	/**
 	 * Prints log messages depending on the debug level passed in.
 	 */
 	debug?: LogLevel;
+	/**
+	 * Full server URL, e.g. `"wss://signal.example.com"` or `"http://127.0.0.1:9876"`.
+	 * Shorthand for host/port/secure/path; any of those passed explicitly win.
+	 */
+	url?: string;
+	/** API key for hosted / multi-tenant Dendri deployments. Sent with every signaling and REST request. */
+	apiKey?: string;
 	/**
 	 * Server host for your Dendri signaling server.
 	 * Also accepts `'/'` to signify relative hostname.
@@ -276,6 +309,11 @@ export class Dendri extends EventEmitterWithError<DendriErrorType, DendriEvents>
 			userId = id.toString();
 		}
 
+		// Expand the `url` shorthand into host/port/secure/path; explicit fields win.
+		if (providedOptions?.url) {
+			providedOptions = { ...parseServerUrl(providedOptions.url), ...providedOptions };
+		}
+
 		// Configurize options
 		const normalizedOptions = {
 			debug: 0, // 1: Errors, 2: Warnings, 3: All logs
@@ -421,6 +459,7 @@ export class Dendri extends EventEmitterWithError<DendriErrorType, DendriEvents>
 						this._options.key!,
 						this._options.pingInterval,
 						this._options.jwt,
+						this._options.apiKey,
 					)
 				: transport === "polling"
 					? new PollingTransport(
@@ -431,6 +470,7 @@ export class Dendri extends EventEmitterWithError<DendriErrorType, DendriEvents>
 							this._options.key!,
 							this._options.pingInterval,
 							this._options.jwt,
+							this._options.apiKey,
 						)
 					: new Socket(
 							this._options.secure ?? false,
@@ -440,6 +480,7 @@ export class Dendri extends EventEmitterWithError<DendriErrorType, DendriEvents>
 							this._options.key!,
 							this._options.pingInterval,
 							this._options.jwt,
+							this._options.apiKey,
 						);
 
 		socket.on(SocketEventType.Message, (data: ServerMessage) => {

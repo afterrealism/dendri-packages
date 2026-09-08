@@ -6,11 +6,15 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as Y from "yjs";
-import { Awareness } from "y-protocols/awareness";
+import { Awareness, encodeAwarenessUpdate } from "y-protocols/awareness";
 import { DendriYjsProvider, type DendriRoomLike } from "./index.js";
 
 /** Create a minimal fake room that tracks subscriptions, broadcasts, and peer events. */
-function fakeRoom(peerId = "test-peer-1"): DendriRoomLike & { _sent: Uint8Array[] } {
+function fakeRoom(peerId = "test-peer-1"): DendriRoomLike & {
+	_sent: Uint8Array[];
+	_simulatePeerJoin(id: string): void;
+	_simulatePeerLeave(id: string): void;
+} {
 	const subscribers = new Map<string, Array<(data: unknown, peerId: string) => void>>();
 	const peerJoinHandlers: Array<(peerId: string) => void> = [];
 	const peerLeaveHandlers: Array<(peerId: string) => void> = [];
@@ -108,7 +112,7 @@ describe("DendriYjsProvider", () => {
 		framed[0] = 2; // MsgType.Update
 		framed.set(update, 1);
 
-		room.broadcastBinary(framed);
+		room.broadcastBinary(framed, { topic: "__yjs" });
 
 		// The local doc should now contain the remote text.
 		const localText = doc.getText("test");
@@ -195,7 +199,7 @@ describe("DendriYjsProvider — timing regression", () => {
 		const framed = new Uint8Array(syncUpdate.length + 1);
 		framed[0] = 1; // MsgType.SyncStep2
 		framed.set(syncUpdate, 1);
-		joinerRoom.broadcastBinary(framed);
+		joinerRoom.broadcastBinary(framed, { topic: "__yjs" });
 
 		// Joiner should now have the host's state.
 		const joinerMap = joinerDoc.getMap<number>("scores");
@@ -229,10 +233,8 @@ describe("DendriYjsProvider — timing regression", () => {
 		const syncFrames = room._sent.filter(
 			(b) => b.length > 0 && b[0] === 0,
 		);
-		expect(syncFrames.length).toBeGreaterThanOrEqual(
-			1,
-			"onPeerJoin must trigger SyncStep1 broadcast",
-		);
+		// onPeerJoin must trigger SyncStep1 broadcast.
+		expect(syncFrames.length).toBeGreaterThanOrEqual(1);
 
 		provider.destroy();
 	});
@@ -263,14 +265,12 @@ describe("DendriYjsProvider — timing regression", () => {
 		framed[0] = 1; // SyncStep2
 		framed.set(update, 1);
 
-		room.broadcastBinary(framed);
+		room.broadcastBinary(framed, { topic: "__yjs" });
 
 		// Step 4: Verify the late-joiner received the full state.
 		const scores = doc.getMap<number>("scores");
-		expect(scores.get("host")).toBe(
-			100,
-			"Document state must sync when provider is created before join",
-		);
+		// Document state must sync when provider is created before join.
+		expect(scores.get("host")).toBe(100);
 
 		hostDoc.destroy();
 		provider.destroy();
@@ -318,12 +318,11 @@ describe("Awareness sync — existing peers must be visible to new joiners", () 
 
 		// Encode the host's awareness and deliver it as a binary message
 		// (simulating the awareness sync that happens when a peer joins).
-		const { encodeAwarenessUpdate } = require("y-protocols/awareness");
 		const awarenessUpdate = encodeAwarenessUpdate(hostAwareness, [hostAwareness.clientID]);
 		const framed = new Uint8Array(awarenessUpdate.length + 1);
 		framed[0] = 3; // MsgType.Awareness
 		framed.set(awarenessUpdate, 1);
-		joinerRoom.broadcastBinary(framed);
+		joinerRoom.broadcastBinary(framed, { topic: "__yjs" });
 
 		// The joiner should now see the host's awareness state.
 		const joinerStates = [...joinerAwareness.getStates().entries()];
@@ -361,7 +360,6 @@ describe("Awareness sync — existing peers must be visible to new joiners", () 
 			{ name: "Carol", color: "#0000ff" },
 		];
 
-		const { encodeAwarenessUpdate } = require("y-protocols/awareness");
 		for (const peer of peers) {
 			const peerDoc = new Y.Doc();
 			const peerAw = new Awareness(peerDoc);
@@ -370,16 +368,14 @@ describe("Awareness sync — existing peers must be visible to new joiners", () 
 			const framed = new Uint8Array(update.length + 1);
 			framed[0] = 3;
 			framed.set(update, 1);
-			joinerRoom.broadcastBinary(framed);
+			joinerRoom.broadcastBinary(framed, { topic: "__yjs" });
 			peerDoc.destroy();
 		}
 
 		// Joiner should see all 3 peers.
 		const states = [...joinerAwareness.getStates().values()];
-		expect(states.length).toBeGreaterThanOrEqual(
-			3,
-			"Joiner must see all 3 existing peers"
-		);
+		// Joiner must see all 3 existing peers.
+		expect(states.length).toBeGreaterThanOrEqual(3);
 
 		joinerProvider.destroy();
 	});

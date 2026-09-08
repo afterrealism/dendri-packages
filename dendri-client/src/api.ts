@@ -17,6 +17,7 @@ export class API {
 		// TODO: Why timestamp, why random?
 		url.searchParams.set("ts", `${Date.now()}${Math.random()}`);
 		url.searchParams.set("version", version);
+		if (this._options.apiKey) url.searchParams.set("api_key", this._options.apiKey);
 
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), API.FETCH_TIMEOUT);
@@ -57,13 +58,14 @@ export class API {
 	async getTurnCredentials(): Promise<RTCIceServer[]> {
 		const protocol = this._options.secure ? "https" : "http";
 		const { host, port, path, key } = this._options;
-		const url = `${protocol}://${host}:${port}${path}${key}/turn-credentials`;
+		const url = new URL(`${protocol}://${host}:${port}${path}${key}/turn-credentials`);
+		if (this._options.apiKey) url.searchParams.set("api_key", this._options.apiKey);
 
 		try {
 			const controller = new AbortController();
 			const timeoutId = setTimeout(() => controller.abort(), API.FETCH_TIMEOUT);
 
-			const response = await fetch(url, {
+			const response = await fetch(url.href, {
 				referrerPolicy: this._options.referrerPolicy,
 				signal: controller.signal,
 			}).finally(() => clearTimeout(timeoutId));

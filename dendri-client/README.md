@@ -1,6 +1,6 @@
 # @afterrealism/dendri-client
 
-Framework-neutral TypeScript client SDK for Dendri WebRTC signaling.
+Framework-neutral TypeScript client SDK for Dendri WebRTC P2P signaling. Works in the browser and Node.js.
 
 ## Install
 
@@ -10,27 +10,47 @@ npm install @afterrealism/dendri-client
 
 ## Connect To Your Server
 
-Dendri is self-host-first. You must provide the signaling server that your app should use:
+Pass the signaling server your app should use as a single URL:
 
 ```ts
 import { Dendri } from "@afterrealism/dendri-client";
 
 const peer = new Dendri({
-	host: "signal.example.com",
-	port: 443,
-	secure: true,
-	path: "/",
+	url: "wss://signal.example.com",
+	apiKey: "your-api-key", // only needed for hosted / multi-tenant deployments
 });
 ```
+
+`url` is shorthand for `host`/`port`/`secure`/`path` — pass those individually if you
+prefer; explicitly passed fields win over url-derived ones.
+
+You can also pass an explicit peer id as the first argument: `new Dendri("my-peer-id", { ... })`.
 
 Local development usually looks like:
 
 ```ts
-const peer = new Dendri({
-	host: "localhost",
-	port: 9876,
-	secure: false,
-	path: "/",
+const peer = new Dendri({ url: "ws://localhost:9876" });
+```
+
+## Quick Start
+
+```ts
+// Connect to another peer
+const conn = peer.connect("other-peer-id");
+
+conn.on("open", () => {
+	conn.send("hello");
+});
+
+conn.on("data", (data) => {
+	console.log("Received:", data);
+});
+
+// Receive connections
+peer.on("connection", (conn) => {
+	conn.on("data", (data) => {
+		console.log("Received:", data);
+	});
 });
 ```
 
@@ -41,12 +61,7 @@ Use `createDendriStore()` when integrating with UI frameworks:
 ```ts
 import { createDendriStore } from "@afterrealism/dendri-client";
 
-const store = createDendriStore({
-	host: "localhost",
-	port: 9876,
-	secure: false,
-	path: "/",
-});
+const store = createDendriStore({ url: "wss://signal.example.com" });
 
 const unsubscribe = store.subscribe(() => {
 	console.log(store.connectionState, store.peers);
@@ -55,58 +70,33 @@ const unsubscribe = store.subscribe(() => {
 store.join("my-room");
 ```
 
-React can wrap `store.subscribe` and `store.getSnapshot()` with `useSyncExternalStore`. Vue can mirror snapshots into `shallowRef`. Svelte can create the store in `onMount` or a `.svelte.ts` factory and call `destroy()` during cleanup.
+## Framework Adapters
 
-## SSR
+Ready-made bindings ship as subpath exports (`react` and `vue` are optional peer
+dependencies; the Svelte adapter is dependency-free):
 
-Importing the package is safe in SSR code, but creating peers and joining rooms should happen only in browser/client lifecycle code because WebRTC and WebSocket connections are browser/runtime side effects.
-
-## Browser Global Build
-
-The package still builds browser global assets in `dist/` for CDN/script-tag workflows:
-
-- `dist/dendri.browser.global.js`
-- `dist/dendri.min.global.js`
-
-Prefer npm imports for framework apps.
-# @afterrealism/dendri-client
-
-WebRTC P2P signaling library for the browser and Node.js.
-
-## Install
-
-```bash
-npm install @afterrealism/dendri-client
+```tsx
+// React — re-renders on store changes (useSyncExternalStore under the hood)
+import { useDendriStore } from "@afterrealism/dendri-client/react";
+const { connectionState, peers } = useDendriStore(store);
 ```
 
-## Quick Start
-
-```typescript
-import Dendri from "@afterrealism/dendri-client";
-
-const peer = new Dendri("my-peer-id", {
-  host: "signal.example.com",
-  secure: true,
-});
-
-// Connect to another peer
-const conn = peer.connect("other-peer-id");
-
-conn.on("open", () => {
-  conn.send("hello");
-});
-
-conn.on("data", (data) => {
-  console.log("Received:", data);
-});
-
-// Receive connections
-peer.on("connection", (conn) => {
-  conn.on("data", (data) => {
-    console.log("Received:", data);
-  });
-});
+```ts
+// Vue — shallowRef that tracks the store, auto-unsubscribes with the component
+import { useDendriStore } from "@afterrealism/dendri-client/vue";
+const snapshot = useDendriStore(store); // snapshot.value.connectionState
 ```
+
+```svelte
+<!-- Svelte — standard store contract, works with $ auto-subscription (Svelte 4 + 5) -->
+<script>
+	import { toSvelteStore } from "@afterrealism/dendri-client/svelte";
+	const snapshot = toSvelteStore(store);
+</script>
+{$snapshot.connectionState}
+```
+
+Any other framework can wrap `store.subscribe` and `store.getSnapshot()` the same way.
 
 ## Features
 
@@ -136,15 +126,35 @@ For multi-tab apps, use `BroadcastChannel` or `localStorage` to coordinate a sin
 
 For binary serialization instead of JSON:
 
-```typescript
+```ts
 import { MsgPackDendri } from "@afterrealism/dendri-client";
 
 const peer = new MsgPackDendri("my-peer-id", {
-  host: "signal.example.com",
-  secure: true,
+	host: "signal.example.com",
+	secure: true,
 });
 ```
 
+## SSR
+
+Importing the package is safe in SSR code, but creating peers and joining rooms should happen only in browser/client lifecycle code because WebRTC and WebSocket connections are browser/runtime side effects.
+
+## Browser Global Build
+
+The package ships browser global (IIFE) assets for CDN/script-tag workflows:
+
+```html
+<script src="https://unpkg.com/@afterrealism/dendri-client"></script>
+<script>
+	const peer = new dendri.Dendri({ host: "signal.example.com", port: 443, secure: true, path: "/" });
+</script>
+```
+
+- `dist/dendri.min.global.js` (minified, served by unpkg/jsdelivr by default)
+- `dist/dendri.browser.global.js` (unminified, for debugging)
+
+The global build exposes `Dendri` and `util` on `window.dendri`. Prefer npm imports for framework apps.
+
 ## License
 
-MIT
+Apache-2.0

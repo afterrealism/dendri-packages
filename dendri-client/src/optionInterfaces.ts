@@ -7,6 +7,13 @@ export interface AnswerOption {
 
 export interface DendriOption {
 	key?: string;
+	/**
+	 * Full server URL, e.g. `"wss://signal.example.com"` or `"http://127.0.0.1:9876"`.
+	 * Shorthand for host/port/secure/path; any of those passed explicitly win.
+	 */
+	url?: string;
+	/** API key for hosted / multi-tenant Dendri deployments. Sent with every signaling and REST request. */
+	apiKey?: string;
 	host?: string;
 	port?: number;
 	path?: string;

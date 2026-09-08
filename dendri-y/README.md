@@ -1,38 +1,5 @@
 # @afterrealism/dendri-y
 
-Framework-neutral Yjs provider for Dendri rooms.
-
-## Install
-
-```bash
-npm install @afterrealism/dendri-client @afterrealism/dendri-y yjs y-protocols
-```
-
-## Usage
-
-```ts
-import { createDendriStore } from "@afterrealism/dendri-client";
-import { DendriYjsProvider } from "@afterrealism/dendri-y";
-import * as Y from "yjs";
-
-const room = createDendriStore({
-	host: "localhost",
-	port: 9876,
-	secure: false,
-	path: "/",
-});
-
-const doc = new Y.Doc();
-const provider = new DendriYjsProvider({ room, doc });
-
-room.join("my-room");
-```
-
-The provider only depends on a small `DendriRoomLike` surface, so React, Vue, Svelte, and vanilla apps can use it with their normal UI reactivity.
-
-Call `provider.destroy()`, `room.destroy()`, and `doc.destroy()` during app cleanup.
-# @afterrealism/dendri-y
-
 Minimal [Yjs](https://github.com/yjs/yjs) provider on top of a
 [Dendri](https://dendri.dev) P2P room. Bridges a `Y.Doc` (and optionally an
 `Awareness` instance) over Dendri's reserved `__yjs` topic.
@@ -40,37 +7,43 @@ Minimal [Yjs](https://github.com/yjs/yjs) provider on top of a
 ## Install
 
 ```bash
-pnpm add @afterrealism/dendri-y yjs y-protocols
+npm install @afterrealism/dendri-client @afterrealism/dendri-y yjs y-protocols
 ```
 
-`yjs` and `y-protocols` are peer dependencies — bring your own to avoid dual
-instances breaking CRDT identity.
+`@afterrealism/dendri-client`, `yjs`, and `y-protocols` are peer dependencies —
+bring your own to avoid dual instances breaking CRDT identity.
 
 ## Usage
 
 ```ts
-import Dendri, { createDendriStore } from "@afterrealism/dendri-client";
+import { createDendriStore } from "@afterrealism/dendri-client";
 import { DendriYjsProvider } from "@afterrealism/dendri-y";
 import * as Y from "yjs";
 import { Awareness } from "y-protocols/awareness";
 
-const store = createDendriStore({
-  DendriCtor: Dendri,
-  dendriOptions: { host: "localhost", port: 9876, secure: false, path: "/" },
+const room = createDendriStore({
+	host: "signal.example.com",
+	port: 443,
+	secure: true,
+	path: "/",
 });
 
-const ydoc = new Y.Doc();
-const awareness = new Awareness(ydoc);
-const provider = new DendriYjsProvider({ room: store, doc: ydoc, awareness });
+const doc = new Y.Doc();
+const awareness = new Awareness(doc);
+const provider = new DendriYjsProvider({ room, doc, awareness });
 
-store.join("my-room");
+room.join("my-room");
 
-// ...later
+// ...later, during app cleanup
 provider.destroy();
-store.destroy();
+room.destroy();
+doc.destroy();
 ```
 
-## Wire format
+The provider only depends on a small `DendriRoomLike` surface, so React, Vue,
+Svelte, and vanilla apps can use it with their normal UI reactivity.
+
+## Wire Format
 
 Reserved topic: `__yjs`. Each frame is a single header byte followed by raw
 Yjs bytes:
@@ -95,4 +68,4 @@ are required.
 
 ## License
 
-MIT
+Apache-2.0

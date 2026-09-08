@@ -20,7 +20,9 @@ export class SSETransport extends SignalingTransport {
 	private _heartbeatTimer?: ReturnType<typeof setInterval>;
 	private _lastSeq = 0;
 	private _baseUrl: string;
+	private _key: string;
 	private _jwt?: string;
+	private _apiKey?: string;
 	private readonly _pingInterval: number;
 
 	/** Backoff schedule base delays in milliseconds. */
@@ -34,15 +36,25 @@ export class SSETransport extends SignalingTransport {
 		host: string,
 		port: number,
 		path: string,
-		_key: string,
+		key: string,
 		pingInterval: number = 5000,
 		jwt?: string,
+		apiKey?: string,
 	) {
 		super();
 		const protocol = secure ? "https://" : "http://";
 		this._baseUrl = `${protocol + host}:${port}${path}`;
 		this._pingInterval = pingInterval;
+		this._key = key;
 		this._jwt = jwt;
+		this._apiKey = apiKey;
+	}
+
+	/** Append the shared auth params (key, jwt, api_key) so every HTTP call authenticates like the WS transport. */
+	private _applyAuthParams(params: URLSearchParams): void {
+		params.set("key", this._key);
+		if (this._jwt) params.set("jwt", this._jwt);
+		if (this._apiKey) params.set("api_key", this._apiKey);
 	}
 
 	get reconnectAttempt(): number {
@@ -68,9 +80,8 @@ export class SSETransport extends SignalingTransport {
 		const params = new URLSearchParams({
 			id: this._id!,
 			token: this._token!,
-			key: "dendri",
 		});
-		if (this._jwt) params.set("jwt", this._jwt);
+		this._applyAuthParams(params);
 		if (this._lastSeq > 0) params.set("last_seq", String(this._lastSeq));
 
 		const url = `${this._baseUrl}http/sse?${params}`;
@@ -172,6 +183,7 @@ export class SSETransport extends SignalingTransport {
 			id: this._id!,
 			token: this._token!,
 		});
+		this._applyAuthParams(params);
 
 		try {
 			await fetch(`${this._baseUrl}http/send?${params}`, {

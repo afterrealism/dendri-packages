@@ -52,12 +52,16 @@ export class Socket extends SignalingTransport {
 		key: string,
 		private readonly pingInterval: number = 5000,
 		jwt?: string,
+		apiKey?: string,
 	) {
 		super();
 
 		const wsProtocol = secure ? "wss://" : "ws://";
 
 		this._baseUrl = `${wsProtocol + host}:${port}${path}dendri?key=${key}`;
+		if (apiKey) {
+			this._baseUrl += `&api_key=${encodeURIComponent(apiKey)}`;
+		}
 		this._jwt = jwt;
 	}
 
